@@ -1,0 +1,17 @@
+vnrobo_fleet_bridge:
+  ros__parameters:
+    # Required
+    api_key: ""        # Set via CLI or environment variable
+    robot_id: ""       # Unique robot identifier
+
+    # Optional
+    robot_name: ""     # Auto-detected from /robot_description if empty
+    heartbeat_interval: 30
+    endpoint: "https://app.vnrobo.com/api/heartbeat"
+
+    # Topic names (override if your robot uses different names)
+    topic_battery: "/battery_state"
+    topic_diagnostics: "/diagnostics"
+    topic_cmd_vel: "/cmd_vel"
+    topic_odom: "/odom"
+    topic_robot_description: "/robot_description"
