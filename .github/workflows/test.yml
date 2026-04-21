@@ -1,0 +1,49 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: pip install ruff
+      - run: ruff check vnrobo_fleet_bridge/
+
+  test-no-ros:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install pure-Python deps
+        run: pip install requests pytest
+      - name: Import vnrobo_client without ROS
+        run: |
+          python -c "
+          import sys
+          # Stub out rclpy so we can import the client module without ROS installed
+          import types
+          rclpy_stub = types.ModuleType('rclpy')
+          sys.modules['rclpy'] = rclpy_stub
+          sys.modules['rclpy.node'] = types.ModuleType('rclpy.node')
+          sys.modules['std_msgs'] = types.ModuleType('std_msgs')
+          sys.modules['std_msgs.msg'] = types.ModuleType('std_msgs.msg')
+          sys.modules['sensor_msgs'] = types.ModuleType('sensor_msgs')
+          sys.modules['sensor_msgs.msg'] = types.ModuleType('sensor_msgs.msg')
+          sys.modules['diagnostic_msgs'] = types.ModuleType('diagnostic_msgs')
+          sys.modules['diagnostic_msgs.msg'] = types.ModuleType('diagnostic_msgs.msg')
+          sys.modules['nav_msgs'] = types.ModuleType('nav_msgs')
+          sys.modules['nav_msgs.msg'] = types.ModuleType('nav_msgs.msg')
+          from vnrobo_fleet_bridge.vnrobo_client import VnRoboClient
+          c = VnRoboClient(api_key='test', robot_id='r1', base_url='http://localhost')
+          print('VnRoboClient import OK')
+          "
